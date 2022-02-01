@@ -4,13 +4,14 @@ import styled from "styled-components";
 import { lighten } from "polished";
 import { useRouter } from "next/router";
 
-import Post from "../components/Index/Post";
-import MainLayout from "../components/layouts/MainLayout";
-import Hero from "../components/Index/Hero";
-import api from "../adapters/admin-adapter";
-import PaginationComponent from "../components/shared/PaginationComponent";
+import Post from "../../components/Index/Post";
+import MainLayout from "../../components/layouts/MainLayout";
+import api from "../../adapters/adapter";
+import PaginationComponent from "../../components/shared/PaginationComponent";
+import LoadingSpinner from "../../components/shared/LoadingSpinner";
 
 const Wraper = styled.div`
+  margin-top: 60px;
   .posts {
     background-color: ${({ theme }) => lighten(0.1, theme.primary)};
     min-height: 100vh;
@@ -18,21 +19,20 @@ const Wraper = styled.div`
   }
 `;
 
-const Index = ({ posts, postsCount }) => {
-  const router = useRouter();
+const Page = ({ posts, postsCount, page }) => {
+  const { isFallback, push } = useRouter();
+
   const handleChangePage = (pageNumber) => {
     if (pageNumber === 1) {
-      router.push(`/`);
+      push(`/`);
     } else {
-      router.push(`/page/${pageNumber}`);
+      push(`/page/${pageNumber}`);
     }
   };
 
   return (
-    <Wraper className="row flex-column w-100 m-0 justify-content-center align-items-center">
-      <div className="col-12 p-0">
-        <Hero posts={posts} />
-      </div>
+    <Wraper className="row flex-column w-100 mx-0 justify-content-center align-items-center">
+      <LoadingSpinner show={isFallback} />
       <div className="posts col-12 col-sm-10 py-2 px-0 px-sm-5">
         <div className="row m-0 justify-content-center justify-content-sm-start">
           {posts?.map((post) => (
@@ -47,33 +47,52 @@ const Index = ({ posts, postsCount }) => {
           pageRange={3}
           onChangepage={handleChangePage}
           getPageUrl={(n) => `/page/${n}`}
-          currPage={1}
+          currPage={+page}
         />
       </div>
     </Wraper>
   );
 };
 
-export const getStaticProps = async () => {
+export const getStaticPaths = async () => {
   try {
-    console.log("index");
+    console.log("getStaticPaths");
     const { status, data } = await api.getPosts();
+    if (status === 200) {
+      let pages = Math.ceil(data.posts.length / 12);
+      const paths = [...Array(pages).keys()].map((p) => ({
+        params: { page: p + 1 + "" },
+      }));
+
+      return { paths, fallback: true };
+    }
+  } catch (e) {
+    return e;
+  }
+};
+
+export const getStaticProps = async ({ params }) => {
+  try {
+    console.log("page");
+    console.log(params?.page);
+    const { status, data } = await api.getPosts(params?.page);
     if (status === 200) {
       return {
         props: {
           posts: data.posts,
           postsCount: data.postsCount,
+          page: params?.page,
         },
         revalidate: 120,
       };
     }
   } catch (e) {
-    console.log(e);
+    return e;
   }
 };
 
-Index.getLayout = function getLayout(page) {
+Page.getLayout = function getLayout(page) {
   return <MainLayout>{page}</MainLayout>;
 };
 
-export default Index;
+export default Page;
