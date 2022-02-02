@@ -94,20 +94,38 @@ const Header = () => {
     };
   }, [scrollEventListener]);
 
-  // useEffect(() => {
-  //   if (!router.asPath.startsWith("/p/") && router.asPath !== "/") {
-  //     document.getElementById("header")?.classList.add("float-header");
-  //     setFloat(true);
-  //   }
-  // }, [router.asPath]);
+  useEffect(() => {
+    if (router.asPath !== "/" && !router.asPath.startsWith("/p/")) {
+      setFloat(true);
+    } else {
+      setFloat(false);
+    }
+  }, [router.asPath]);
 
   return (
-    <Wraper float={float} className="header" id="header">
+    <Wraper
+      float={
+        (router.asPath !== "/" && !router.asPath.startsWith("/p/")) || float
+      }
+      className={`header ${
+        router.asPath !== "/" &&
+        !router.asPath.startsWith("/p/") &&
+        "float-header"
+      }`}
+      id="header"
+    >
       <div className="dark-layer rtl d-flex justify-content-between">
         <Link href="/">
           <a className="logo order-2 order-xl-1 ">sd</a>
         </Link>
-        <Nav float={float} className="d-none d-xl-block order-2" />
+        <Nav
+          float={
+            (router.asPath !== "/" &&
+              !router.asPath.startsWith("/p/")) ||
+            float
+          }
+          className="d-none d-xl-block order-2"
+        />
         <DrawerMenu className="d-inline-block d-xl-none order-1 " />
         {_.isEmpty(user) ? (
           <div className="auth-wraper d-none d-xl-block order-3  order-xl-3 ">
