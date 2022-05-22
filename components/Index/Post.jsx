@@ -103,10 +103,16 @@ const Post = ({ post }) => {
         <p className="post-subtitle">{shorten(post?.subtitle, 80)}</p>
         <div className="meta-data">
           {post?.author?.profileImage ? (
-            <img
+            <Image
               src={post?.author?.profileImage}
-              alt="profile"
+              alt="author-profile"
               className="author-profile"
+              placeholder="blur"
+              blurDataURL={`data:image/svg+xml;base64,${toBase64(
+                shimmer("100%", 30)
+              )}`}
+              width={30}
+              height={30}
             />
           ) : (
             <img
