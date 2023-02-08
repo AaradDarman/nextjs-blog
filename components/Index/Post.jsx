@@ -125,7 +125,7 @@ const Post = ({ post }) => {
               className="author-profile"
             />
           )}
-          <div className="d-flex flex-column">
+          <div className="d-flex flex-column" style={{ marginRight: "3px" }}>
             <span className="author-name">{post?.author?.fullName}</span>
             <span className="create-date">{fromNow(post?.createAt)}</span>
           </div>
