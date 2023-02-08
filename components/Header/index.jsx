@@ -62,55 +62,29 @@ const Wraper = styled.header`
 
 const Header = () => {
   let lastKnownScrollPosition = 0;
-  const [float, setFloat] = useState(false);
   const { user } = useSelector((state) => state);
+  const [offset, setOffset] = useState(0);
 
-  // const navigate = useNavigate();
   const router = useRouter();
 
-  let scrollEventListener = useCallback(() => {
-    lastKnownScrollPosition = window.scrollY;
-    if (
-      (router.asPath.startsWith("/p/") || router.asPath === "/") &&
-      lastKnownScrollPosition === 0
-    ) {
-      document.getElementById("header")?.classList.remove("float-header");
-      setFloat(false);
-    }
-    if (
-      (router.asPath.startsWith("/p/") || router.asPath === "/") &&
-      lastKnownScrollPosition > 15
-    ) {
-      document.getElementById("header")?.classList.add("float-header");
-      setFloat(true);
-    }
-  }, [router.asPath]);
-
   useEffect(() => {
-    window.removeEventListener("scroll", scrollEventListener, true);
-    window.addEventListener("scroll", scrollEventListener, true);
-    return () => {
-      window.removeEventListener("scroll", scrollEventListener, true);
-    };
-  }, [scrollEventListener]);
-
-  useEffect(() => {
-    if (router.asPath !== "/" && !router.asPath.startsWith("/p/")) {
-      setFloat(true);
-    } else {
-      setFloat(false);
-    }
-  }, [router.asPath]);
+    const onScroll = () => setOffset(window.pageYOffset);
+    window.removeEventListener("scroll", onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
     <Wraper
       float={
-        (router.asPath !== "/" && !router.asPath.startsWith("/p/")) || float
+        (router.asPath !== "/" && !router.asPath.startsWith("/p/")) ||
+        offset > 15
       }
       className={`header ${
-        router.asPath !== "/" &&
-        !router.asPath.startsWith("/p/") &&
-        "float-header"
+        (router.asPath !== "/" &&
+          !router.asPath.startsWith("/p/") &&
+          "float-header") ||
+        (offset > 15 && "float-header")
       }`}
       id="header"
     >
@@ -120,9 +94,8 @@ const Header = () => {
         </Link>
         <Nav
           float={
-            (router.asPath !== "/" &&
-              !router.asPath.startsWith("/p/")) ||
-            float
+            (router.asPath !== "/" && !router.asPath.startsWith("/p/")) ||
+            offset > 15
           }
           className="d-none d-xl-block order-2"
         />
